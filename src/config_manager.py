@@ -21,7 +21,12 @@ def load_config():
     if not os.path.exists(CONFIG_PATH):
         return CONFIG_DEFAULT
 
-    with open(CONFIG_PATH, "r", encoding="utf-8") as archivo:
-        config = json.load(archivo)
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as archivo:
+            config = json.load(archivo)
 
-    return config
+        return config
+
+    except json.JSONDecodeError:
+        print("El archivo de configuracion esta corrupto.")
+        return CONFIG_DEFAULT
