@@ -1,28 +1,27 @@
-﻿"""Gestor de configuracion JSON UTF-8."""
-import json
-from pathlib import Path
+﻿import json
+import os
 
-DATA_DIR = Path("data")
-CONFIG_PATH = DATA_DIR / "config.json"
-BACKUP_PATH = DATA_DIR / "config.bak"
-TEMP_PATH = DATA_DIR / "config.tmp"
 
-DEFAULT_CONFIG = {
+CONFIG_PATH = "data/config.json"
+
+
+CONFIG_DEFAULT = {
     "nombre_usuario": "Invitado",
     "tema_interfaz": "claro",
     "idioma": "es-ES",
     "tamano_fuente": 11,
     "color_barra_menu": "#2c3e50",
     "color_letra": "#ffffff",
-    "foto_perfil": "",
+    "foto_perfil": ""
 }
 
 
-def load_config() -> dict:
-    """Carga la configuracion desde disco o devuelve defaults."""
-    return DEFAULT_CONFIG.copy()
+def load_config():
 
+    if not os.path.exists(CONFIG_PATH):
+        return CONFIG_DEFAULT
 
-def save_config(config: dict) -> None:
-    """Guarda la configuracion de forma segura."""
-    pass
+    with open(CONFIG_PATH, "r", encoding="utf-8") as archivo:
+        config = json.load(archivo)
+
+    return config
