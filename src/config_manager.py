@@ -30,3 +30,13 @@ def load_config():
     except json.JSONDecodeError:
         print("El archivo de configuracion esta corrupto.")
         return CONFIG_DEFAULT
+
+    except PermissionError:
+        print("No tienes permiso para leer el archivo de configuracion.")
+        return CONFIG_DEFAULT
+    
+    
+def save_config(config):
+
+    with open(CONFIG_PATH, "w", encoding="utf-8") as archivo:
+        json.dump(config, archivo, indent=4, ensure_ascii=False)
