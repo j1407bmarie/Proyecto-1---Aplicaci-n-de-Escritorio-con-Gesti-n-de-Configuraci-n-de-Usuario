@@ -1,13 +1,9 @@
 ﻿import tkinter as tk
-from src.config_manager import load_config, save_config
+from src.config_manager import load_config
 
 
 def main():
     config = load_config()
-
-    config["nombre_usuario"] = "María Ñandú"
-    save_config(config)
-
     root = tk.Tk()
     root.title("Config App")
     root.geometry("600x400")

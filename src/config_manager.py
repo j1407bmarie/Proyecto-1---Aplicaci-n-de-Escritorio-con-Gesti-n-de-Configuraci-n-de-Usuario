@@ -34,9 +34,31 @@ def load_config():
     except PermissionError:
         print("No tienes permiso para leer el archivo de configuracion.")
         return CONFIG_DEFAULT
-    
-    
+
+
 def save_config(config):
 
-    with open(CONFIG_PATH, "w", encoding="utf-8") as archivo:
-        json.dump(config, archivo, indent=4, ensure_ascii=False)
+    archivo_temporal = "data/config.tmp"
+    archivo_backup = "data/config.bak"
+
+    try:
+
+        with open(archivo_temporal, "w", encoding="utf-8") as archivo:
+            json.dump(config, archivo, indent=4, ensure_ascii=False)
+
+        if os.path.exists(CONFIG_PATH):
+            os.replace(CONFIG_PATH, archivo_backup)
+
+        os.replace(archivo_temporal, CONFIG_PATH)
+
+        print("Configuracion guardada correctamente.")
+
+    except PermissionError:
+
+        print("No tienes permiso para guardar la configuracion.")
+
+        if os.path.exists(archivo_temporal):
+            os.remove(archivo_temporal)
+
+        if os.path.exists(archivo_backup) and not os.path.exists(CONFIG_PATH):
+            os.replace(archivo_backup, CONFIG_PATH)
