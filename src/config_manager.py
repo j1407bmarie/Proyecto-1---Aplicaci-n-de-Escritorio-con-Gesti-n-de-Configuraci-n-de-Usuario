@@ -9,10 +9,11 @@ CONFIG_DEFAULT = {
     "nombre_usuario": "Invitado",
     "tema_interfaz": "claro",
     "idioma": "es-ES",
-    "tamano_fuente": 11,
+    "tamano_fuente": 9,
     "color_barra_menu": "#2c3e50",
     "color_letra": "#ffffff",
-    "foto_perfil": ""
+    "foto_perfil": "",
+    "estilos_textos": {}
 }
 
 
@@ -30,11 +31,11 @@ def load_config():
             print("El archivo de configuracion no tiene un formato valido.")
             return CONFIG_DEFAULT.copy()
 
-        for clave in CONFIG_DEFAULT:
+        for clave, valor in CONFIG_DEFAULT.items():
 
             if clave not in config:
-                print("Falta informacion en el archivo de configuracion.")
-                return CONFIG_DEFAULT.copy()
+
+                config[clave] = valor
 
         return config
 
