@@ -160,9 +160,12 @@ def obtener_texto(clave):
             "foto": "Profile photo:",
             "seleccionar_foto": "Select picture",
             "guardar": "Save configuration",
-            "abrir": "Open Settings",
             "claro": "light",
-            "oscuro": "dark"
+            "oscuro": "dark",
+            "descripcion": "With this application you can manage your settings and customize your experience",
+            "archivo": "File",
+            "edicion": "Edit",
+            "ver": "View"
         }
 
     else:
@@ -180,9 +183,12 @@ def obtener_texto(clave):
             "foto": "Foto de perfil:",
             "seleccionar_foto": "Seleccionar foto",
             "guardar": "Guardar configuracion",
-            "abrir": "Abrir Settings",
             "claro": "claro",
-            "oscuro": "oscuro"
+            "oscuro": "oscuro",
+            "descripcion": "Con esta aplicación puedes gestionar tu configuración y personalizar tu experiencia",
+            "archivo": "Archivo",
+            "edicion": "Edición",
+            "ver": "Ver"
         }
 
     return textos[clave]
@@ -306,6 +312,26 @@ def actualizar_textos():
 
     etiqueta_nombre.configure(
         text=config["nombre_usuario"]
+    )
+
+    etiqueta_descripcion.configure(
+        text=obtener_texto("descripcion")
+    )
+
+    boton_archivo.configure(
+        text=obtener_texto("archivo")
+    )
+
+    boton_edicion.configure(
+        text=obtener_texto("edicion")
+    )
+
+    boton_ver.configure(
+        text=obtener_texto("ver")
+    )
+    
+    boton_settings.configure(
+    text=obtener_texto("configuracion")
     )
 
 
@@ -744,7 +770,7 @@ def main():
 
     boton_settings = tk.Button(
         panel_izquierdo,
-        text="Settings",
+        text="Configuración",
         command=mostrar_settings,
         fg=color_letra,
         bg=color_barra,
