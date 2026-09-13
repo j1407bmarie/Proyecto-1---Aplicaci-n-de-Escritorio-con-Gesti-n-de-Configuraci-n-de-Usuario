@@ -7,48 +7,141 @@ from tkinter import ttk
 from src.config_manager import load_config, save_config
 
 
-def guardar_configuracion():
-    config["nombre_usuario"] = entrada_nombre.get()
-    config["tema_interfaz"] = combo_tema.get()
-    config["idioma"] = combo_idioma.get()
-    config["tamano_fuente"] = int(entrada_fuente.get())
-    config["color_barra_menu"] = color_barra
-    config["color_letra"] = color_letra
-    config["foto_perfil"] = foto_perfil
+config = {}
 
-    save_config(config)
+root = None
+ventana_settings = None
 
-    aplicar_configuracion()
+entrada_nombre = None
+combo_tema = None
+combo_idioma = None
+entrada_fuente = None
 
-    messagebox.showinfo(
-        "Configuracion",
-        "La configuracion se guardo correctamente."
-    )
+etiqueta_foto = None
+
+etiqueta_titulo = None
+etiqueta_nombre = None
+
+barra_menu = None
+
+color_barra = ""
+color_letra = ""
+foto_perfil = ""
+
+
+def obtener_texto(clave):
+
+    if config["idioma"] == "en-US":
+
+        textos = {
+            "titulo": "Configuration Application",
+            "usuario": "User: ",
+            "configuracion": "Settings",
+            "nombre": "Username:",
+            "tema": "Theme:",
+            "idioma": "Language:",
+            "fuente": "Font size:",
+            "color_barra": "Menu bar color:",
+            "color_letra": "Text color:",
+            "foto": "Profile photo:",
+            "seleccionar_foto": "Select photo",
+            "guardar": "Save configuration",
+            "abrir": "Open Settings",
+            "claro": "light",
+            "oscuro": "dark"
+        }
+
+    else:
+
+        textos = {
+            "titulo": "Aplicacion de Configuracion",
+            "usuario": "Usuario: ",
+            "configuracion": "Configuracion",
+            "nombre": "Nombre de usuario:",
+            "tema": "Tema:",
+            "idioma": "Idioma:",
+            "fuente": "Tamaño de fuente:",
+            "color_barra": "Color de barra de menu:",
+            "color_letra": "Color de letra:",
+            "foto": "Foto de perfil:",
+            "seleccionar_foto": "Seleccionar foto",
+            "guardar": "Guardar configuracion",
+            "abrir": "Abrir Settings",
+            "claro": "claro",
+            "oscuro": "oscuro"
+        }
+
+    return textos[clave]
 
 
 def aplicar_configuracion():
 
     if config["tema_interfaz"] == "oscuro":
         color_fondo = "#222222"
-        color_texto = "#ffffff"
     else:
         color_fondo = "#ffffff"
-        color_texto = "#000000"
 
-    root.configure(bg=color_fondo)
-
-    etiqueta_nombre.configure(
-        bg=color_fondo,
-        fg=color_texto
+    root.configure(
+        bg=color_fondo
     )
 
     etiqueta_titulo.configure(
         bg=color_fondo,
-        fg=color_texto
+        fg=color_letra,
+        font=("Arial", config["tamano_fuente"] + 8, "bold")
+    )
+
+    etiqueta_nombre.configure(
+        bg=color_fondo,
+        fg=color_letra,
+        font=("Arial", config["tamano_fuente"])
+    )
+
+    barra_menu.configure(
+        background=color_barra,
+        foreground=color_letra,
+        activebackground=color_barra,
+        activeforeground=color_letra
     )
 
 
+def guardar_configuracion():
+
+    global config
+
+    try:
+
+        config["nombre_usuario"] = entrada_nombre.get()
+        config["tema_interfaz"] = combo_tema.get()
+        config["idioma"] = combo_idioma.get()
+        config["tamano_fuente"] = int(entrada_fuente.get())
+        config["color_barra_menu"] = color_barra
+        config["color_letra"] = color_letra
+        config["foto_perfil"] = foto_perfil
+
+        save_config(config)
+
+        aplicar_configuracion()
+
+        actualizar_textos()
+
+        messagebox.showinfo(
+            "Configuracion",
+            "La configuracion se guardo correctamente."
+        )
+
+        ventana_settings.destroy()
+
+    except ValueError:
+
+        messagebox.showerror(
+            "Error",
+            "El tamaño de fuente debe ser un numero."
+        )
+
+
 def seleccionar_color_barra():
+
     global color_barra
 
     resultado = colorchooser.askcolor(
@@ -56,11 +149,19 @@ def seleccionar_color_barra():
     )
 
     if resultado[1]:
+
         color_barra = resultado[1]
-        boton_color_barra.configure(bg=color_barra)
+
+        barra_menu.configure(
+            background=color_barra,
+            activebackground=color_barra
+        )
+
+        root.update()
 
 
 def seleccionar_color_letra():
+
     global color_letra
 
     resultado = colorchooser.askcolor(
@@ -68,50 +169,105 @@ def seleccionar_color_letra():
     )
 
     if resultado[1]:
+
         color_letra = resultado[1]
-        boton_color_letra.configure(bg=color_letra)
+
+        aplicar_configuracion()
 
 
 def seleccionar_foto():
+
     global foto_perfil
 
     ruta = filedialog.askopenfilename(
         title="Seleccionar foto de perfil",
         filetypes=[
-            ("Imagenes", "*.png *.jpg *.jpeg"),
+            ("Imagenes", "*.png *.gif"),
             ("Todos los archivos", "*.*")
         ]
     )
 
     if ruta:
+
         foto_perfil = ruta
+
         etiqueta_foto.configure(
-            text="Foto seleccionada"
+            text="Foto seleccionada:\n" + ruta
+        )
+
+
+def actualizar_textos():
+
+    etiqueta_titulo.configure(
+        text=obtener_texto("titulo")
+    )
+
+    etiqueta_nombre.configure(
+        text=obtener_texto("usuario") + config["nombre_usuario"]
+    )
+
+
+def actualizar_tema():
+
+    tema = combo_tema.get()
+
+    if tema == "oscuro":
+
+        ventana_settings.configure(
+            bg="#222222"
+        )
+
+    else:
+
+        ventana_settings.configure(
+            bg="#ffffff"
         )
 
 
 def mostrar_settings():
 
+    global ventana_settings
     global entrada_nombre
     global combo_tema
     global combo_idioma
     global entrada_fuente
+    global etiqueta_foto
 
-    
     ventana_settings = tk.Toplevel(root)
 
-    ventana_settings.title("Settings")
-    ventana_settings.geometry("500x500")
+    ventana_settings.title(
+        obtener_texto("configuracion")
+    )
+
+    ventana_settings.geometry("600x650")
+
+    if config["tema_interfaz"] == "oscuro":
+
+        color_fondo = "#222222"
+        color_texto = "#ffffff"
+
+    else:
+
+        color_fondo = "#ffffff"
+        color_texto = "#000000"
+
+    ventana_settings.configure(
+        bg=color_fondo
+    )
 
     tk.Label(
         ventana_settings,
-        text="Configuracion",
-        font=("Arial", 18, "bold")
+        text=obtener_texto("configuracion"),
+        font=("Arial", 20, "bold"),
+        bg=color_fondo,
+        fg=color_texto
     ).pack(pady=15)
 
     tk.Label(
         ventana_settings,
-        text="Nombre de usuario:"
+        text=obtener_texto("nombre"),
+        bg=color_fondo,
+        fg=color_texto
     ).pack()
 
     entrada_nombre = tk.Entry(
@@ -128,7 +284,9 @@ def mostrar_settings():
 
     tk.Label(
         ventana_settings,
-        text="Tema:"
+        text=obtener_texto("tema"),
+        bg=color_fondo,
+        fg=color_texto
     ).pack(pady=(10, 0))
 
     combo_tema = ttk.Combobox(
@@ -143,9 +301,16 @@ def mostrar_settings():
 
     combo_tema.pack()
 
+    combo_tema.bind(
+        "<<ComboboxSelected>>",
+        lambda evento: actualizar_tema()
+    )
+
     tk.Label(
         ventana_settings,
-        text="Idioma:"
+        text=obtener_texto("idioma"),
+        bg=color_fondo,
+        fg=color_texto
     ).pack(pady=(10, 0))
 
     combo_idioma = ttk.Combobox(
@@ -162,7 +327,9 @@ def mostrar_settings():
 
     tk.Label(
         ventana_settings,
-        text="Tamaño de fuente:"
+        text=obtener_texto("fuente"),
+        bg=color_fondo,
+        fg=color_texto
     ).pack(pady=(10, 0))
 
     entrada_fuente = tk.Spinbox(
@@ -172,7 +339,11 @@ def mostrar_settings():
         width=10
     )
 
-    entrada_fuente.delete(0, "end")
+    entrada_fuente.delete(
+        0,
+        "end"
+    )
+
     entrada_fuente.insert(
         0,
         config["tamano_fuente"]
@@ -182,53 +353,64 @@ def mostrar_settings():
 
     tk.Label(
         ventana_settings,
-        text="Color de barra de menu:"
+        text=obtener_texto("color_barra"),
+        bg=color_fondo,
+        fg=color_texto
     ).pack(pady=(10, 0))
-
-    boton_color_barra = tk.Button(
-        ventana_settings,
-        text="Seleccionar color",
-        command=seleccionar_color_barra,
-        bg=color_barra
-    )
-
-    boton_color_barra.pack()
-
-    tk.Label(
-        ventana_settings,
-        text="Color de letra:"
-    ).pack(pady=(10, 0))
-
-    boton_color_letra = tk.Button(
-        ventana_settings,
-        text="Seleccionar color",
-        command=seleccionar_color_letra,
-        bg=color_letra
-    )
-
-    boton_color_letra.pack()
-
-    tk.Label(
-        ventana_settings,
-        text="Foto de perfil:"
-    ).pack(pady=(10, 0))
-
-    etiqueta_foto = tk.Label(
-        ventana_settings,
-        text="No se ha seleccionado una foto"
-    )
-
-    etiqueta_foto.pack()
 
     tk.Button(
         ventana_settings,
-        text="Seleccionar foto",
+        text="Seleccionar color",
+        command=seleccionar_color_barra
+    ).pack()
+
+    tk.Label(
+        ventana_settings,
+        text=obtener_texto("color_letra"),
+        bg=color_fondo,
+        fg=color_texto
+    ).pack(pady=(10, 0))
+
+    tk.Button(
+        ventana_settings,
+        text="Seleccionar color",
+        command=seleccionar_color_letra
+    ).pack()
+
+    tk.Label(
+        ventana_settings,
+        text=obtener_texto("foto"),
+        bg=color_fondo,
+        fg=color_texto
+    ).pack(pady=(10, 0))
+
+    if foto_perfil:
+
+        texto_foto = "Foto seleccionada:\n" + foto_perfil
+
+    else:
+
+        texto_foto = "No se ha seleccionado una foto"
+
+    etiqueta_foto = tk.Label(
+        ventana_settings,
+        text=texto_foto,
+        wraplength=500,
+        bg=color_fondo,
+        fg=color_texto
+    )
+
+    etiqueta_foto.pack(pady=5)
+
+    tk.Button(
+        ventana_settings,
+        text=obtener_texto("seleccionar_foto"),
         command=seleccionar_foto
     ).pack(pady=5)
 
     tk.Button(
         ventana_settings,
-        text="Guardar configuracion",
+        text=obtener_texto("guardar"),
         command=guardar_configuracion
     ).pack(pady=20)
 
@@ -240,12 +422,9 @@ def main():
     global color_barra
     global color_letra
     global foto_perfil
-    global entrada_nombre
-    global combo_tema
-    global combo_idioma
-    global entrada_fuente
-    global etiqueta_nombre
     global etiqueta_titulo
+    global etiqueta_nombre
+    global barra_menu
 
     config = load_config()
 
@@ -255,7 +434,10 @@ def main():
 
     root = tk.Tk()
 
-    root.title("Aplicacion de Configuracion")
+    root.title(
+        obtener_texto("titulo")
+    )
+
     root.geometry("700x450")
 
     barra_menu = tk.Menu(root)
@@ -311,7 +493,7 @@ def main():
     )
 
     menu_settings.add_command(
-        label="Abrir Settings",
+        label="Settings",
         command=mostrar_settings
     )
 
@@ -320,29 +502,37 @@ def main():
         menu=menu_settings
     )
 
-    root.config(menu=barra_menu)
+    root.config(
+        menu=barra_menu
+    )
 
     etiqueta_titulo = tk.Label(
         root,
-        text="Aplicacion de Configuracion",
-        font=("Arial", 22, "bold")
+        text=obtener_texto("titulo"),
+        font=("Arial", config["tamano_fuente"] + 8, "bold")
     )
 
-    etiqueta_titulo.pack(pady=50)
+    etiqueta_titulo.pack(
+        pady=50
+    )
 
     etiqueta_nombre = tk.Label(
         root,
-        text="Usuario: " + config["nombre_usuario"],
-        font=("Arial", 14)
+        text=obtener_texto("usuario") + config["nombre_usuario"],
+        font=("Arial", config["tamano_fuente"])
     )
 
-    etiqueta_nombre.pack(pady=10)
+    etiqueta_nombre.pack(
+        pady=10
+    )
 
     tk.Button(
         root,
-        text="Abrir Settings",
+        text=obtener_texto("abrir"),
         command=mostrar_settings
-    ).pack(pady=20)
+    ).pack(
+        pady=20
+    )
 
     aplicar_configuracion()
 
