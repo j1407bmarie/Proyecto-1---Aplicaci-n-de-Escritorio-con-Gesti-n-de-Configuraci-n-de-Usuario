@@ -4,6 +4,8 @@ from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
 
+from PIL import Image, ImageTk
+
 from src.config_manager import load_config, save_config
 
 
@@ -28,13 +30,125 @@ color_barra = ""
 color_letra = ""
 foto_perfil = ""
 
+imagen_perfil = None
+
+panel_izquierdo = None
+panel_derecho = None
+boton_settings = None
+boton_archivo = None
+boton_edicion = None
+boton_ver = None
+etiqueta_usuario = None
+etiqueta_bienvenida = None
+etiqueta_descripcion = None
+
+
+class ToolTip:
+
+    def __init__(self, widget, text, delay=500):
+
+        self.widget = widget
+        self.text = text
+        self.delay = delay
+        self.tip = None
+        self._job = None
+
+        widget.bind(
+            "<Enter>",
+            self._schedule,
+            add="+"
+        )
+
+        widget.bind(
+            "<Leave>",
+            self._hide,
+            add="+"
+        )
+
+        widget.bind(
+            "<ButtonPress>",
+            self._hide,
+            add="+"
+        )
+
+
+    def _schedule(self, _event=None):
+
+        self._cancel()
+
+        self._job = self.widget.after(
+            self.delay,
+            self._show
+        )
+
+
+    def _cancel(self):
+
+        if self._job is not None:
+
+            self.widget.after_cancel(
+                self._job
+            )
+
+            self._job = None
+
+
+    def _show(self):
+
+        if self.tip is not None:
+            return
+
+        x = (
+            self.widget.winfo_rootx()
+            + 12
+        )
+
+        y = (
+            self.widget.winfo_rooty()
+            + self.widget.winfo_height()
+            + 6
+        )
+
+        self.tip = tk.Toplevel(
+            self.widget
+        )
+
+        self.tip.wm_overrideredirect(
+            True
+        )
+
+        self.tip.wm_geometry(
+            f"+{x}+{y}"
+        )
+
+        tk.Label(
+            self.tip,
+            text=self.text,
+            justify="left",
+            background="#ffffe0",
+            relief="solid",
+            borderwidth=1,
+            padx=6,
+            pady=3,
+        ).pack()
+
+
+    def _hide(self, _event=None):
+
+        self._cancel()
+
+        if self.tip is not None:
+
+            self.tip.destroy()
+            self.tip = None
+
 
 def obtener_texto(clave):
 
     if config["idioma"] == "en-US":
 
         textos = {
-            "titulo": "Configuration Application",
+            "titulo": "Welcome!",
             "usuario": "User: ",
             "configuracion": "Settings",
             "nombre": "Username:",
@@ -44,7 +158,7 @@ def obtener_texto(clave):
             "color_barra": "Menu bar color:",
             "color_letra": "Text color:",
             "foto": "Profile photo:",
-            "seleccionar_foto": "Select photo",
+            "seleccionar_foto": "Select picture",
             "guardar": "Save configuration",
             "abrir": "Open Settings",
             "claro": "light",
@@ -54,7 +168,7 @@ def obtener_texto(clave):
     else:
 
         textos = {
-            "titulo": "Aplicacion de Configuracion",
+            "titulo": "¡Bienvenido!",
             "usuario": "Usuario: ",
             "configuracion": "Configuracion",
             "nombre": "Nombre de usuario:",
@@ -74,6 +188,64 @@ def obtener_texto(clave):
     return textos[clave]
 
 
+def cargar_foto_perfil():
+
+    global imagen_perfil
+
+    if foto_perfil:
+
+        try:
+
+            imagen = Image.open(
+                foto_perfil
+            )
+
+            imagen = imagen.resize(
+                (60, 60)
+            )
+
+            imagen_perfil = ImageTk.PhotoImage(
+                imagen
+            )
+
+            etiqueta_usuario.configure(
+                image=imagen_perfil,
+                text=""
+            )
+
+            return
+
+        except Exception:
+            pass
+
+    try:
+
+        imagen = Image.open(
+            "image.png"
+        )
+
+        imagen = imagen.resize(
+            (60, 60)
+        )
+
+        imagen_perfil = ImageTk.PhotoImage(
+            imagen
+        )
+
+        etiqueta_usuario.configure(
+            image=imagen_perfil,
+            text=""
+        )
+
+    except Exception:
+
+        etiqueta_usuario.configure(
+            image="",
+            text="👤",
+            font=("Arial", 25)
+        )
+
+
 def aplicar_configuracion():
 
     if config["tema_interfaz"] == "oscuro":
@@ -81,27 +253,59 @@ def aplicar_configuracion():
     else:
         color_fondo = "#ffffff"
 
-    root.configure(
+    panel_derecho.configure(
         bg=color_fondo
     )
 
-    etiqueta_titulo.configure(
+    etiqueta_bienvenida.configure(
         bg=color_fondo,
         fg=color_letra,
         font=("Arial", config["tamano_fuente"] + 8, "bold")
     )
 
-    etiqueta_nombre.configure(
-        bg=color_fondo,
-        fg=color_letra,
-        font=("Arial", config["tamano_fuente"])
+    etiqueta_descripcion.configure(
+        bg=color_fondo
     )
 
-    barra_menu.configure(
-        background=color_barra,
-        foreground=color_letra,
-        activebackground=color_barra,
-        activeforeground=color_letra
+    etiqueta_usuario.configure(
+        bg="#171c26",
+        fg=color_letra,
+        font=("Arial", config["tamano_fuente"], "bold")
+    )
+
+    panel_izquierdo.configure(
+        bg=color_barra
+    )
+
+    boton_settings.configure(
+        bg=color_barra,
+        fg=color_letra
+    )
+
+    boton_archivo.configure(
+        bg=color_barra,
+        fg=color_letra
+    )
+
+    boton_edicion.configure(
+        bg=color_barra,
+        fg=color_letra
+    )
+
+    boton_ver.configure(
+        bg=color_barra,
+        fg=color_letra
+    )
+
+
+def actualizar_textos():
+
+    etiqueta_bienvenida.configure(
+        text=obtener_texto("titulo")
+    )
+
+    etiqueta_nombre.configure(
+        text=config["nombre_usuario"]
     )
 
 
@@ -124,6 +328,8 @@ def guardar_configuracion():
         aplicar_configuracion()
 
         actualizar_textos()
+
+        cargar_foto_perfil()
 
         messagebox.showinfo(
             "Configuracion",
@@ -191,20 +397,20 @@ def seleccionar_foto():
 
         foto_perfil = ruta
 
-        etiqueta_foto.configure(
-            text="Foto seleccionada:\n" + ruta
-        )
+        if etiqueta_foto is not None:
 
+            try:
 
-def actualizar_textos():
+                if etiqueta_foto.winfo_exists():
 
-    etiqueta_titulo.configure(
-        text=obtener_texto("titulo")
-    )
+                    etiqueta_foto.configure(
+                        text="Foto seleccionada:\n" + ruta
+                    )
 
-    etiqueta_nombre.configure(
-        text=obtener_texto("usuario") + config["nombre_usuario"]
-    )
+            except tk.TclError:
+
+                pass
+
 
 
 def actualizar_tema():
@@ -422,9 +628,22 @@ def main():
     global color_barra
     global color_letra
     global foto_perfil
+
     global etiqueta_titulo
     global etiqueta_nombre
     global barra_menu
+
+    global panel_izquierdo
+    global panel_derecho
+
+    global boton_settings
+    global boton_archivo
+    global boton_edicion
+    global boton_ver
+
+    global etiqueta_usuario
+    global etiqueta_bienvenida
+    global etiqueta_descripcion
 
     config = load_config()
 
@@ -435,106 +654,229 @@ def main():
     root = tk.Tk()
 
     root.title(
-        obtener_texto("titulo")
+        "Main"
     )
 
-    root.geometry("700x450")
-
-    barra_menu = tk.Menu(root)
-
-    menu_archivo = tk.Menu(
-        barra_menu,
-        tearoff=0
+    root.geometry(
+        "520x380"
     )
 
-    menu_archivo.add_command(
-        label="Salir",
-        command=root.destroy
+    root.resizable(
+        False,
+        False
     )
 
-    barra_menu.add_cascade(
-        label="Archivo",
-        menu=menu_archivo
-    )
+    # Panel izquierdo
 
-    menu_edicion = tk.Menu(
-        barra_menu,
-        tearoff=0
-    )
-
-    menu_edicion.add_command(
-        label="Configuracion",
-        command=mostrar_settings
-    )
-
-    barra_menu.add_cascade(
-        label="Edicion",
-        menu=menu_edicion
-    )
-
-    menu_ver = tk.Menu(
-        barra_menu,
-        tearoff=0
-    )
-
-    menu_ver.add_command(
-        label="Actualizar",
-        command=aplicar_configuracion
-    )
-
-    barra_menu.add_cascade(
-        label="Ver",
-        menu=menu_ver
-    )
-
-    menu_settings = tk.Menu(
-        barra_menu,
-        tearoff=0
-    )
-
-    menu_settings.add_command(
-        label="Settings",
-        command=mostrar_settings
-    )
-
-    barra_menu.add_cascade(
-        label="Settings",
-        menu=menu_settings
-    )
-
-    root.config(
-        menu=barra_menu
-    )
-
-    etiqueta_titulo = tk.Label(
+    panel_izquierdo = tk.Frame(
         root,
-        text=obtener_texto("titulo"),
-        font=("Arial", config["tamano_fuente"] + 8, "bold")
+        bg="#171c26"
     )
 
-    etiqueta_titulo.pack(
-        pady=50
+    panel_izquierdo.place(
+        x=0,
+        y=0,
+        width=190,
+        height=370
     )
+
+    barra_menu = panel_izquierdo
+
+    # Panel derecho
+
+    if config["tema_interfaz"] == "oscuro":
+        color_fondo = "#222222"
+    else:
+        color_fondo = "#f8fafc"
+
+    panel_derecho = tk.Frame(
+        root,
+        bg=color_fondo
+    )
+
+    panel_derecho.place(
+        x=190,
+        y=0,
+        width=330,
+        height=370
+    )
+
+    # Foto de usuario
+
+    etiqueta_usuario = tk.Label(
+        panel_izquierdo,
+        text="👤",
+        bg=color_barra,
+        fg=color_letra,
+        font=("Arial", 25)
+    )
+
+    etiqueta_usuario.place(
+        x=30,
+        y=50,
+        width=60,
+        height=60
+    )
+
+    ToolTip(
+        etiqueta_usuario,
+        "Bonita Foto ;3"
+    )
+
+    # Nombre
 
     etiqueta_nombre = tk.Label(
-        root,
-        text=obtener_texto("usuario") + config["nombre_usuario"],
-        font=("Arial", config["tamano_fuente"])
+        panel_izquierdo,
+        text=config["nombre_usuario"],
+        bg=color_barra,
+        fg=color_letra,
+        font=("Helvetica", 10, "bold")
     )
 
-    etiqueta_nombre.pack(
-        pady=10
+    etiqueta_nombre.place(
+        x=90,
+        y=60,
+        width=90,
+        height=30
     )
 
-    tk.Button(
-        root,
-        text=obtener_texto("abrir"),
-        command=mostrar_settings
-    ).pack(
-        pady=20
+    # Settings
+
+    boton_settings = tk.Button(
+        panel_izquierdo,
+        text="Settings",
+        command=mostrar_settings,
+        fg=color_letra,
+        bg=color_barra,
+        activeforeground=color_letra,
+        activebackground=color_barra,
+        relief="flat",
+        bd=0,
+        highlightthickness=0,
+        cursor="hand2"
     )
+
+    boton_settings.place(
+        x=47,
+        y=140,
+        width=96,
+        height=32
+    )
+
+    # Archivo
+
+    boton_archivo = tk.Button(
+        panel_izquierdo,
+        text="Archivo",
+        command=lambda: None,
+        fg=color_letra,
+        bg=color_barra,
+        activeforeground=color_letra,
+        activebackground=color_barra,
+        relief="flat",
+        bd=0,
+        highlightthickness=0,
+        cursor="hand2"
+    )
+
+    boton_archivo.place(
+        x=47,
+        y=190,
+        width=96,
+        height=32
+    )
+
+    # Edicion
+
+    boton_edicion = tk.Button(
+        panel_izquierdo,
+        text="Edición",
+        command=lambda: messagebox.showinfo(
+            "Edición",
+            "Hello!"
+        ),
+        fg=color_letra,
+        bg=color_barra,
+        activeforeground=color_letra,
+        activebackground=color_barra,
+        relief="flat",
+        bd=0,
+        highlightthickness=0,
+        cursor="hand2"
+    )
+
+    boton_edicion.place(
+        x=47,
+        y=240,
+        width=96,
+        height=32
+    )
+
+    # Ver
+
+    boton_ver = tk.Button(
+        panel_izquierdo,
+        text="Ver",
+        command=lambda: messagebox.showinfo(
+            "Ver",
+            "Hello!"
+        ),
+        fg=color_letra,
+        bg=color_barra,
+        activeforeground=color_letra,
+        activebackground=color_barra,
+        relief="flat",
+        bd=0,
+        highlightthickness=0,
+        cursor="hand2"
+    )
+
+    boton_ver.place(
+        x=47,
+        y=290,
+        width=96,
+        height=32
+    )
+
+    # Bienvenida
+
+    etiqueta_bienvenida = tk.Label(
+        panel_derecho,
+        text="¡Bienvenido!",
+        bg=color_fondo,
+        fg=color_letra,
+        font=("Helvetica", 19, "bold")
+    )
+
+    etiqueta_bienvenida.place(
+        x=50,
+        y=75,
+        width=230,
+        height=50
+    )
+
+    # Descripcion
+
+    etiqueta_descripcion = tk.Label(
+        panel_derecho,
+        text="Con esta aplicación puedes gestionar tu configuración y personalizar tu experiencia",
+        bg=color_fondo,
+        fg="#777f95",
+        wraplength=220
+    )
+
+    etiqueta_descripcion.place(
+        x=50,
+        y=112,
+        width=230,
+        height=60
+    )
+
+    cargar_foto_perfil()
 
     aplicar_configuracion()
+
+    actualizar_textos()
 
     root.mainloop()
 
