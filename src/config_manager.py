@@ -12,7 +12,7 @@ CONFIG_DEFAULT = {
     "tamano_fuente": 9,
     "color_barra_menu": "#2c3e50",
     "color_letra": "#ffffff",
-    "foto_perfil": "",
+    "foto_perfil": "C:/Users/Dell/Desktop/URL/4to Semestre/Manejo e Implex/Proyecto 1/guest.png",
     "estilos_textos": {}
 }
 
